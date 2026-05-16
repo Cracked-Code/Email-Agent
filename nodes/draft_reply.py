@@ -7,7 +7,7 @@ def draft_reply(state:EmailWriter) :
     feedback = state['feedback']
 
     llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")
-    prompt = f"You are an email assistant. Write a reply to this email. From: {email['sender']}, Subject: {email['subject']}, Body: {email['body']}."
+    prompt = f"You are an email assistant writing on behalf of {state['account']}. Write a reply to this email. From: {email['sender']}, Subject: {email['subject']}, Body: {email['body']}."
     if feedback:
         prompt += f" Previous draft was rejected. Feedback: {feedback}"
     
