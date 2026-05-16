@@ -121,5 +121,5 @@ A browser window will open for Gmail authentication on first run. After that, `t
 
 ## Author
 
-Nicholas Chopliani — CS Senior, Syracuse University  
+Nicholas Chopliani 
 [GitHub](https://github.com/Cracked-Code)
