@@ -6,14 +6,12 @@ import os
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
-def get_gmail_service():
+def get_gmail_service(account: str):
     creds = None
 
-    # if token already exists, load it
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists(f'token_{account}.json'):
+        creds = Credentials.from_authorized_user_file(f'token_{account}.json', SCOPES)
 
-    # if no valid token, do the OAuth flow
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -21,8 +19,7 @@ def get_gmail_service():
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
 
-        # save token for next time
-        with open('token.json', 'w') as token:
+        with open(f'token_{account}.json', 'w') as token:
             token.write(creds.to_json())
 
     return build('gmail', 'v1', credentials=creds)

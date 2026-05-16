@@ -9,3 +9,4 @@ class EmailWriter(TypedDict) :
     awaiting_approval : bool
     completed : bool
     feedback : Optional[str]
+    account: Optional[str]
