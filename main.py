@@ -12,7 +12,8 @@ def main():
         "awaiting_approval": False,
         "completed": False,
         "feedback": None,
-        "account": input("What email account do you wish to use? ")
+        "account": input("What email account do you wish to use? "),
+        "name": input("What would you like to be referred to? ")
     })
 
 if __name__ == "__main__":

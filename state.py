@@ -10,3 +10,4 @@ class EmailWriter(TypedDict) :
     completed : bool
     feedback : Optional[str]
     account: Optional[str]
+    name : Optional[str]

@@ -17,9 +17,9 @@ def select_email(state: EmailWriter):
         response = llm.invoke(prompt)
         print(response.content)
         
-        userinput2 = input("\nWhich one would you like to respond to? Type the number associated with the email or 0 to search again:\n ")
+        userinput2 = input("\nWhich one would you like to respond to? Type the number associated with the email or -1 to search again:\n ")
         choice = int(userinput2)
-        if choice == 0:
+        if choice == -1:
             userinput = input("What are you looking for? ")  # let them search again
         else:
             index = choice   # valid pick, exit loop
