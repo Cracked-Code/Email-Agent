@@ -15,6 +15,6 @@ def main():
         "account": input("What email account do you wish to use? "),
         "name": input("What would you like to be referred to? ")
     })
-
+    
 if __name__ == "__main__":
     main()

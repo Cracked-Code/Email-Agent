@@ -11,3 +11,4 @@ class EmailWriter(TypedDict) :
     feedback : Optional[str]
     account: Optional[str]
     name : Optional[str]
+    query : Optional[str]

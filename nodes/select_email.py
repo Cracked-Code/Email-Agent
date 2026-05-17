@@ -3,25 +3,19 @@ from state import EmailWriter
 
 def select_email(state: EmailWriter):
     emails = state["emails"]
-    index = None
+    query = state["query"]
+
     if not emails:
         print("No unread emails found.")
         return {"completed": True}
     
-    userinput = input("Hi! What email are you looking for? ")
-
-    while index is None:
-        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")
-        prompt = f"Here are the emails with their index numbers: {list(enumerate(emails))}. The user is looking for: {userinput}. Return the 3 best matches showing their ORIGINAL INDEX NUMBER from the list, the sender, and subject. Keep it brief."
+    userinput = query
         
-        response = llm.invoke(prompt)
-        print(response.content)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")
+    prompt = f"""Here are the emails with their index numbers: {list(enumerate(emails))}. The user is looking for: {userinput}.
+    Return the 3 best matches as a JSON array with this exact structure:
+    [{{"index": 0, "sender": "...", "subject": "..."}}]
+    Return ONLY the JSON array, no other text, no markdown backticks."""
         
-        userinput2 = input("\nWhich one would you like to respond to? Type the number associated with the email or -1 to search again:\n ")
-        choice = int(userinput2)
-        if choice == -1:
-            userinput = input("What are you looking for? ")  # let them search again
-        else:
-            index = choice   # valid pick, exit loop
-        
-    return {"current_email": state["emails"][index]}
+    response = llm.invoke(prompt)        
+    return {"matches": response.content, "emails": emails}
