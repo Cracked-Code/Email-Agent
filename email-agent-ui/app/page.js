@@ -23,7 +23,7 @@ export default function Home() {
   setLoading(true);
   const res = await fetch("https://email-agent-api-bvjy.onrender.com/fetch-emails", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },  
     body: JSON.stringify({ account: accountToUse, name }),
   });
   const data = await res.json();

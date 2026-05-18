@@ -6,7 +6,7 @@ from google_auth_oauthlib.flow import Flow
 import os
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-
+import json
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -19,7 +19,8 @@ SCOPES = [
 # Query parameters in FastAPI
 @router.get("/login")
 def login(account: str, request: Request):
-    flow = Flow.from_client_secrets_file('credentials.json', SCOPES)
+    credentials_info = json.loads(os.environ.get("GOOGLE_CREDENTIALS"))
+    flow = Flow.from_client_config(credentials_info, SCOPES)
     flow.redirect_uri = "https://email-agent-api-bvjy.onrender.com/auth/callback"
     auth_url, state = flow.authorization_url(state=account, access_type="offline", include_granted_scopes="true",prompt="consent")
     request.session["code_verifier"] = flow.code_verifier
@@ -29,7 +30,8 @@ def login(account: str, request: Request):
 # Receiving the code from Google
 @router.get("/callback")
 def callback(code: str, state: str, request: Request, db: Session = Depends(get_db)):
-    flow = Flow.from_client_secrets_file('credentials.json', SCOPES, state=state)
+    credentials_info = json.loads(os.environ.get("GOOGLE_CREDENTIALS"))
+    flow = Flow.from_client_config(credentials_info, SCOPES)
     flow.redirect_uri = "https://email-agent-api-bvjy.onrender.com/callback"
     
     authorization_response = str(request.url)
