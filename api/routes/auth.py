@@ -20,7 +20,7 @@ SCOPES = [
 @router.get("/login")
 def login(account: str, request: Request):
     flow = Flow.from_client_secrets_file('credentials.json', SCOPES)
-    flow.redirect_uri = "http://localhost:8000/auth/callback"
+    flow.redirect_uri = "https://email-agent-api-bvjy.onrender.com/auth/callback"
     auth_url, state = flow.authorization_url(state=account, access_type="offline", include_granted_scopes="true",prompt="consent")
     request.session["code_verifier"] = flow.code_verifier
     return RedirectResponse(url=auth_url)
@@ -30,7 +30,7 @@ def login(account: str, request: Request):
 @router.get("/callback")
 def callback(code: str, state: str, request: Request, db: Session = Depends(get_db)):
     flow = Flow.from_client_secrets_file('credentials.json', SCOPES, state=state)
-    flow.redirect_uri = "http://localhost:8000/auth/callback"
+    flow.redirect_uri = "https://email-agent-api-bvjy.onrender.com/callback"
     
     authorization_response = str(request.url)
     flow.fetch_token(
