@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [step, setStep] = useState(1);
@@ -12,19 +12,27 @@ export default function Home() {
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [draft, setDraft] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
 
-  async function fetchEmails() {
-    setLoading(true);
-    const res = await fetch("http://localhost:8000/fetch-emails", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ account, name }),
-    });
-    const data = await res.json();
-    setEmails(data.emails);
-    setLoading(false);
-    setStep(2);
+  function connectGmail() {
+    window.location.href = `http://localhost:8000/auth/login?account=${account}`;
   }
+  async function fetchEmails(accountOverride = null) {
+  const accountToUse = accountOverride || account;
+  if (accountOverride) setAccount(accountOverride);
+  setLoading(true);
+  const res = await fetch("http://localhost:8000/fetch-emails", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ account: accountToUse, name }),
+  });
+  const data = await res.json();
+  localStorage.setItem("account", accountToUse);
+  localStorage.setItem("name", name);
+  setEmails(data.emails);
+  setLoading(false);
+  setStep(2);
+}
   async function searchEmails() {
     setLoading(true);
     const res = await fetch("http://localhost:8000/search-email", {
@@ -61,44 +69,63 @@ async function approveEmail() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       account,
+      name,
       current_email: selectedEmail,
       draft_reply: draft,
-      approved: true,
+      approval: true,
+      feedback: null,
     }),
   });
   await res.json();
   setLoading(false);
   setStep(5);
-  }
+}
 
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const accountParam = params.get("account");
+  
+  if (accountParam) {
+    fetchEmails(accountParam);
+  } else {
+    const savedAccount = localStorage.getItem("account");
+    const savedName = localStorage.getItem("name");
+    if (savedAccount) {
+      setName(savedName || "");
+      fetchEmails(savedAccount);
+    }
+  }
+}, []);
+  
   return (
     <main className="min-h-screen bg-gray-950 text-white p-8 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-8">Email Agent</h1>
 
-      {step === 1 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Connect your account</h2>
-          <input
-            className="w-full bg-gray-800 rounded p-3 text-white"
-            placeholder="Account name (e.g. nickalot03)"
-            value={account}
-            onChange={(e) => setAccount(e.target.value)}
-          />
-          <input
-            className="w-full bg-gray-800 rounded p-3 text-white"
-            placeholder="Your name (for sign-off)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <button
-            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
-            onClick={fetchEmails}
-            disabled={loading}
-          >
-            {loading ? "Fetching emails..." : "Connect & Fetch Emails"}
-          </button>
-        </div>
-      )}
+        {step === 1 && (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Connect your account</h2>
+      <input
+        className="w-full bg-gray-800 rounded p-3 text-white"
+        placeholder="Account name (e.g. nickalot03)"
+        value={account}
+        onChange={(e) => setAccount(e.target.value)}
+      />
+      <input
+        className="w-full bg-gray-800 rounded p-3 text-white"
+        placeholder="Your name (for sign-off)"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <button
+        className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
+        onClick={connectGmail}
+        disabled={loading}
+      >
+        {loading ? "Connecting..." : "Connect To Gmail"}
+      </button>
+    </div>
+  )}
 
       {step === 2 && (
   <div className="space-y-4">
@@ -189,19 +216,19 @@ async function approveEmail() {
     <div className="space-y-4 text-center">
       <p className="text-4xl">✓</p>
       <h2 className="text-xl font-semibold text-green-400">Email Sent!</h2>
-      <button
-        className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold"
-        onClick={() => {
-          setStep(1);
-          setDraft("");
-          setFeedback("");
-          setSelectedEmail(null);
-          setMatches([]);
-          setQuery("");
-        }}
-      >
-        Start Over
-      </button>
+          <button
+      className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold"
+      onClick={() => {
+        setDraft("");
+        setFeedback("");
+        setSelectedEmail(null);
+        setMatches([]);
+        setQuery("");
+        fetchEmails(localStorage.getItem("account"));
+      }}
+    >
+      Start Over
+    </button>
     </div>
   )}
     </main>

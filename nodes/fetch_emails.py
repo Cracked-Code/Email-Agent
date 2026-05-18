@@ -2,8 +2,8 @@ from state import EmailWriter
 from tools.gmail import get_gmail_service
 import base64
 
-def fetch_emails(state:EmailWriter) :
-    gmail_service = get_gmail_service(state["account"])
+def fetch_emails(state:EmailWriter, db) :
+    gmail_service = get_gmail_service(state["account"],db)
 
     result = gmail_service.users().messages().list(userId='me',maxResults = 20 ).execute()
     message = result.get('messages', [])

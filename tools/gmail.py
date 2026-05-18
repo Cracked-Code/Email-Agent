@@ -1,25 +1,24 @@
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
-import os
+import json
+from database import User
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
-def get_gmail_service(account: str):
-    creds = None
+def get_gmail_service(account: str, db):
+    
+    user = db.query(User).filter(User.account_name == account).first()
+    if not user:
+        raise ValueError(f"No account found for {account}. Please connect via /auth/login")
+    token_json = user.token_json  # access the field from the user object
 
-    if os.path.exists(f'token_{account}.json'):
-        creds = Credentials.from_authorized_user_file(f'token_{account}.json', SCOPES)
+    creds = Credentials.from_authorized_user_info(json.loads(token_json), SCOPES)
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+    # Save refreshed token back
+    user.token_json = creds.to_json()
+    db.commit()
 
-        with open(f'token_{account}.json', 'w') as token:
-            token.write(creds.to_json())
-
-    return build('gmail', 'v1', credentials=creds)
+    return build('gmail','v1', credentials=creds)
