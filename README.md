@@ -4,7 +4,9 @@ A full-stack autonomous AI email assistant built with LangGraph, FastAPI, and Ne
 
 ## Live Demo
 
-[Link coming soon]
+🔗 [https://email-agent-gold-ten.vercel.app](https://email-agent-gold-ten.vercel.app)
+
+> **Note:** This app is currently in development/testing mode with Google OAuth. Only the developer's Gmail account (`nickalot03@gmail.com`) is authorized to use the live demo. To run it with your own Gmail account, follow the local setup instructions below and add your email as a test user in Google Cloud Console.
 
 ## How It Works
 
@@ -24,25 +26,30 @@ A full-stack autonomous AI email assistant built with LangGraph, FastAPI, and Ne
 - **LangGraph** — agent orchestration and stateful graph execution
 - **Google Gemini 2.5 Flash Lite** — language model via LangChain
 - **Gmail API** — email fetching, OAuth 2.0 authentication
-- **SQLAlchemy + PostgreSQL** — token storage per user
+- **SQLAlchemy + PostgreSQL** — token storage per user (Supabase)
 - **Python 3.13**
 
 **Frontend**
 - **Next.js 15** — React framework
 - **Tailwind CSS** — styling
 
+**Infrastructure**
+- **Render** — backend hosting
+- **Vercel** — frontend hosting
+- **Supabase** — managed PostgreSQL database
+
 ## Architecture
 
 ```
-Next.js (frontend)
+Next.js (Vercel)
     ↓
-FastAPI (backend)
+FastAPI (Render)
     ↓
 LangGraph agent
     ↓
 Gmail API + Gemini
     ↓
-PostgreSQL (token storage)
+PostgreSQL (Supabase)
 ```
 
 ## Agent Graph
@@ -78,7 +85,7 @@ email_agent/
 │   ├── draft_reply.py      # LLM drafts reply with feedback loop
 │   └── approve.py          # Sends approved email via Gmail API
 ├── tools/
-│   └── gmail.py            # Gmail OAuth service (loads from DB)
+│   └── gmail.py            # Gmail OAuth service (loads token from DB)
 ├── api/
 │   └── routes/
 │       ├── emails.py       # Email endpoints
@@ -118,6 +125,7 @@ pip install fastapi uvicorn langgraph langchain-google-genai google-auth google-
 3. Create **OAuth 2.0 credentials** — type: **Web application**
 4. Add `http://localhost:8000/auth/callback` as an authorized redirect URI
 5. Download the JSON and save as `credentials.json` in the project root
+6. Go to **OAuth consent screen** → **Test users** and add your Gmail address
 
 ### 5. Set up environment variables
 
@@ -126,6 +134,8 @@ Create a `.env` file:
 ```
 GEMINI_API_KEY=your_gemini_api_key_here
 DATABASE_URL=sqlite:///./email_agent.db
+SECRET_KEY=your_secret_key_here
+GOOGLE_CREDENTIALS={"web":{"client_id":"...","client_secret":"...","redirect_uris":["http://localhost:8000/auth/callback"],"auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token"}}
 ```
 
 ### 6. Run the backend
@@ -160,5 +170,5 @@ Visit `http://localhost:3000`, enter your account name and display name, click *
 
 ## Author
 
-Nick C
+Cracked-Code
 [GitHub](https://github.com/Cracked-Code)
