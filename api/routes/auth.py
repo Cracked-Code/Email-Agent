@@ -32,7 +32,7 @@ def login(account: str, request: Request):
 def callback(code: str, state: str, request: Request, db: Session = Depends(get_db)):
     credentials_info = json.loads(os.environ.get("GOOGLE_CREDENTIALS"))
     flow = Flow.from_client_config(credentials_info, SCOPES)
-    flow.redirect_uri = "https://email-agent-api-bvjy.onrender.com/callback"
+    flow.redirect_uri = "https://email-agent-api-bvjy.onrender.com/auth/callback"
     
     authorization_response = str(request.url)
     flow.fetch_token(
