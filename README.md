@@ -160,5 +160,5 @@ Visit `http://localhost:3000`, enter your account name and display name, click *
 
 ## Author
 
-Nicholas Chopliani
+Nick C
 [GitHub](https://github.com/Cracked-Code)
