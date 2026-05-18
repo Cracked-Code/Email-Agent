@@ -11,11 +11,14 @@ app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://*.vercel.app"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://email-agent-gold-ten.vercel.app"
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
-
 @app.on_event("startup")
 def startup():
     init_db()
