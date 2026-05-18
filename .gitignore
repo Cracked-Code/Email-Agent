@@ -2,7 +2,7 @@
 
 venv/
 __pycache__/
-
+email_agent.db
 credentials.json
 
 token_*.json
