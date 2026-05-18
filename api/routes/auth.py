@@ -57,4 +57,4 @@ def callback(code: str, state: str, request: Request, db: Session = Depends(get_
         db.commit()
     
     # Redirecting back to frontend
-    return RedirectResponse(url=f"http://localhost:3000?account={state}")
+    return RedirectResponse(url=f"https://email-agent-gold-ten.vercel.app?account={state}")

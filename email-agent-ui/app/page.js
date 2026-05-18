@@ -15,13 +15,13 @@ export default function Home() {
   const [authenticated, setAuthenticated] = useState(false);
 
   function connectGmail() {
-    window.location.href = `http://localhost:8000/auth/login?account=${account}`;
+    window.location.href = `https://email-agent-api-bvjy.onrender.com/auth/login?account=${account}`;
   }
   async function fetchEmails(accountOverride = null) {
   const accountToUse = accountOverride || account;
   if (accountOverride) setAccount(accountOverride);
   setLoading(true);
-  const res = await fetch("http://localhost:8000/fetch-emails", {
+  const res = await fetch("https://email-agent-api-bvjy.onrender.com/fetch-emails", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ account: accountToUse, name }),
@@ -35,7 +35,7 @@ export default function Home() {
 }
   async function searchEmails() {
     setLoading(true);
-    const res = await fetch("http://localhost:8000/search-email", {
+    const res = await fetch("https://email-agent-api-bvjy.onrender.com/search-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ emails, query }),
@@ -47,7 +47,7 @@ export default function Home() {
   }
   async function getDraft(feedbackText = null) {
   setLoading(true);
-  const res = await fetch("http://localhost:8000/draft-reply", {
+  const res = await fetch("https://email-agent-api-bvjy.onrender.com/draft-reply", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -64,7 +64,7 @@ export default function Home() {
 
 async function approveEmail() {
   setLoading(true);
-  const res = await fetch("http://localhost:8000/approve", {
+  const res = await fetch("https://email-agent-api-bvjy.onrender.com/approve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
