@@ -5,7 +5,7 @@ from api.routes.auth import router as auth_router
 from config import GEMINI_API_KEY
 from database import init_db
 from starlette.middleware.sessions import SessionMiddleware
-
+from api.routes import health
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
 
@@ -25,3 +25,4 @@ def startup():
 
 app.include_router(router)
 app.include_router(auth_router, prefix="/auth")
+app.include_router(health.router)
