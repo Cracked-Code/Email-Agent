@@ -1,6 +1,13 @@
+"use client";
+import Image from "next/image";
+import { redirect, useRouter } from "next/navigation";
+
 export default function PrivacyPolicy() {
   return (
     <main className="min-h-screen bg-gray-950 text-white p-8 max-w-3xl mx-auto">
+      <button onClick={() => redirect("/")}>
+        <Image className="invert" src="/house-solid-full.svg" alt="Home" width={35} height={35 }  />
+        </button>  
       <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
       <p className="text-gray-400 mb-8">Last updated: [7/3/2026]</p>
 
@@ -122,7 +129,7 @@ export default function PrivacyPolicy() {
             .
           </li>
           <li>
-            You may request deletion of any data we retain by contacting us at [your contact email].
+            You may request deletion of any data we retain by contacting us at [nickc1904work@gmail.com].
           </li>
           <li>You may stop using the App at any time, which will halt any further data access.</li>
         </ul>

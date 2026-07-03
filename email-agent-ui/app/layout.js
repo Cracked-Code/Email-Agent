@@ -12,8 +12,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Gmail-Agent",
-  description: "Crafty Gmail-Agent",
+  title: "Email Agent",
+  description: "Search your Gmail inbox and draft AI-assisted email replies.",
 };
 
 export default function RootLayout({ children }) {

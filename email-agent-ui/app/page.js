@@ -154,11 +154,33 @@ export default function Home() {
       <h1 className="text-3xl font-bold mb-8 text-center" >Email Agent
       </h1>
       {step === 1 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Connect your account</h2>
-          <input
-            className="w-full bg-gray-800 rounded p-3 text-white"
-            placeholder="Account name (e.g. nickalot03)"
+    <div className="space-y-4">
+      <div className="bg-gray-900 border border-gray-800 rounded p-4 space-y-2">
+        <h2 className="text-lg font-semibold">What Email Agent does</h2>
+        <p className="text-gray-300 text-sm">
+          Email Agent helps you search through your Gmail inbox using natural language, and
+          drafts email replies on your behalf using AI. You review and approve every draft
+          before it&apos;s sent — Email Agent never sends anything without your explicit
+          confirmation.
+        </p>
+        <p className="text-gray-400 text-sm">
+          To use this app, you&apos;ll connect your Google account so Email Agent can read your
+          emails and send replies you approve. See our{" "}
+          <a href="/privacy" className="text-blue-400 hover:underline">
+            Privacy Policy
+          </a>{" "}
+          and{" "}
+          <a href="/terms-of-service" className="text-blue-400 hover:underline">
+            Terms of Service
+          </a>{" "}
+          for details on how your data is handled.
+        </p>
+      </div>
+
+    <h2 className="text-xl font-semibold">Connect your account</h2>
+    <input
+      className="w-full bg-gray-800 rounded p-3 text-white"
+      placeholder="Account name (e.g. nickalot03)"
             value={account}
             onChange={(e) => setAccount(e.target.value)}
           />
@@ -283,9 +305,14 @@ export default function Home() {
           </button>
         </div>
       )}
-      <button onClick={() => router.push('/privacy')}>
-        PrivacyPolicy
-      </button>
+      <div className="flex justify-between py-20">
+        <button className= "p-4 text-left border-b border-t text-sm font-semibold text-blue-400 hover:underline" onClick={() => router.push('/privacy')}>
+          Privacy Policy
+        </button>
+        <button className= "p-4 text-right border-b border-t text-sm font-semibold text-blue-400 hover:underline" onClick={() => router.push('/terms-of-service')}>
+          Terms of service
+        </button>
+      </div>
     </main>
   );
 }
