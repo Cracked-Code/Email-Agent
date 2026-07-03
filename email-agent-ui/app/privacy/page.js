@@ -2,7 +2,7 @@ export default function PrivacyPolicy() {
   return (
     <main className="min-h-screen bg-gray-950 text-white p-8 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-      <p className="text-gray-400 mb-8">Last updated: [Month Day, Year]</p>
+      <p className="text-gray-400 mb-8">Last updated: [7/3/2026]</p>
 
       <p className="mb-6">
         This Privacy Policy describes how Email Agent (&quot;we,&quot; &quot;our,&quot; or &quot;the App&quot;) collects,
@@ -161,7 +161,7 @@ export default function PrivacyPolicy() {
           us at:
         </p>
         <p className="text-gray-300">
-          Email: [your contact email]
+          Email: [nickc1904work@gmail.com]
           <br />
           App Name: Email Agent
         </p>

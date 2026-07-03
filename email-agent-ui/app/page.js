@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [account, setAccount] = useState("");
   const [name, setName] = useState("");
@@ -282,6 +283,9 @@ export default function Home() {
           </button>
         </div>
       )}
+      <button onClick={() => router.push('/privacy')}>
+        PrivacyPolicy
+      </button>
     </main>
   );
 }
