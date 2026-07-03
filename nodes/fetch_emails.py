@@ -2,18 +2,18 @@ from state import EmailWriter
 from tools.gmail import get_gmail_service
 import base64
 
-def fetch_emails(state:EmailWriter, db) :
+def fetch_emails(state:EmailWriter, db, page_token=None) :
     gmail_service = get_gmail_service(state["account"],db)
-
-    result = gmail_service.users().messages().list(userId='me',maxResults = 20 ).execute()
+    print("Page number : ", page_token)
+    result = gmail_service.users().messages().list(userId='me',q='-category:promotions -category:social',pageToken=page_token,maxResults = 50).execute()
     message = result.get('messages', [])
-
+    print(f"Total emails: {len(message)}")  
     emails = []
     for msg in message :
         mail = gmail_service.users().messages().get(userId='me', id=msg['id'], format='full').execute()
         emails.append(parse_email(mail))
 
-    return {"emails" : emails}
+    return {"emails" : emails, "next_page_token": result.get('nextPageToken')}
 
 def parse_email(message):
     headers = message["payload"]["headers"]

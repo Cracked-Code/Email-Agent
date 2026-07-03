@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
+import Image from "next/image";
+
 
 export default function Home() {
   const [step, setStep] = useState(1);
@@ -17,135 +19,184 @@ export default function Home() {
   function connectGmail() {
     window.location.href = `https://email-agent-api-bvjy.onrender.com/auth/login?account=${account}`;
   }
-  async function fetchEmails(accountOverride = null) {
-  const accountToUse = accountOverride || account;
-  if (accountOverride) setAccount(accountOverride);
-  setLoading(true);
-  const res = await fetch("https://email-agent-api-bvjy.onrender.com/fetch-emails", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },  
-    body: JSON.stringify({ account: accountToUse, name }),
-  });
-  const data = await res.json();
-  localStorage.setItem("account", accountToUse);
-  localStorage.setItem("name", name);
-  setEmails(data.emails);
-  setLoading(false);
-  setStep(2);
-}
+
+  async function fetchWithRetry(url, options, retries = 2) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const res = await fetch(url, options);
+        if (res.ok) return res;
+        if (i === retries) return res;
+      } catch (e) {
+        if (i === retries) throw e;
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+
+  async function fetchEmails(accountOverride = null, nameOverride = null) {
+    const accountToUse = accountOverride || account;
+    const nameToUse = nameOverride ?? name;
+    if (accountOverride) setAccount(accountOverride);
+    if (nameOverride !== null) setName(nameOverride);
+    setLoading(true);
+    const res = await fetchWithRetry(
+      "https://email-agent-api-bvjy.onrender.com/fetch-emails",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ account: accountToUse, name: nameToUse }),
+      }
+    );
+    const data = await res.json();
+    localStorage.setItem("account", accountToUse);
+    localStorage.setItem("name", nameToUse);
+    setEmails(data.emails || []);
+    setLoading(false);
+    setStep(2);
+  }
+
   async function searchEmails() {
     setLoading(true);
-    const res = await fetch("https://email-agent-api-bvjy.onrender.com/search-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emails, query }),
-    });
+    const res = await fetchWithRetry(
+      "https://email-agent-api-bvjy.onrender.com/search-email",
+      
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails, query, account }),
+      }
+    );
+     console.log("status:", res.status);
     const data = await res.json();
-    setMatches(data.matches);
+     console.log("data:", data);
+    setMatches(data.matches || []);
     setLoading(false);
     setStep(3);
   }
+
   async function getDraft(feedbackText = null) {
-  setLoading(true);
-  const res = await fetch("https://email-agent-api-bvjy.onrender.com/draft-reply", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      account,
-      name,
-      current_email: selectedEmail,
-      feedback: feedbackText,
-    }),
-  });
-  const data = await res.json();
-  setDraft(data.draft_reply);
-  setLoading(false);
-}
-
-async function approveEmail() {
-  setLoading(true);
-  const res = await fetch("https://email-agent-api-bvjy.onrender.com/approve", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      account,
-      name,
-      current_email: selectedEmail,
-      draft_reply: draft,
-      approval: true,
-      feedback: null,
-    }),
-  });
-  await res.json();
-  setLoading(false);
-  setStep(5);
-}
-
-
-  useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const accountParam = params.get("account");
-  
-  if (accountParam) {
-    fetchEmails(accountParam);
-  } else {
-    const savedAccount = localStorage.getItem("account");
-    const savedName = localStorage.getItem("name");
-    if (savedAccount) {
-      setName(savedName || "");
-      fetchEmails(savedAccount);
-    }
+    setLoading(true);
+    const res = await fetchWithRetry(
+      "https://email-agent-api-bvjy.onrender.com/draft-reply",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          account,
+          name,
+          current_email: selectedEmail,
+          feedback: feedbackText,
+        }),
+      }
+    );
+    const data = await res.json();
+    setDraft(data.draft_reply);
+    setLoading(false);
   }
-}, []);
-  
+
+  async function approveEmail() {
+    setLoading(true);
+    const res = await fetchWithRetry(
+      "https://email-agent-api-bvjy.onrender.com/approve",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          account,
+          name,
+          current_email: selectedEmail,
+          draft_reply: draft,
+          approval: true,
+          feedback: null,
+        }),
+      }
+    );
+    await res.json();
+    setLoading(false);
+    setStep(5);
+  }
+
+  function GoHome() {
+    if (step > 1) {
+      setStep(2)
+      setQuery("");
+      setMatches([]);
+      setSelectedEmail(null);
+      setDraft("");
+      setFeedback("");
+    } 
+
+  }
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const accountParam = params.get("account");
+    
+    if (accountParam) {
+      fetchEmails(accountParam);
+    } else {
+      const savedAccount = localStorage.getItem("account");
+      const savedName = localStorage.getItem("name");
+      if (savedAccount) {
+        
+        fetchEmails(savedAccount, savedName || "");
+      }
+    }
+  }, []);
+
   return (
     <main className="min-h-screen bg-gray-950 text-white p-8 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Email Agent</h1>
-
-        {step === 1 && (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Connect your account</h2>
-      <input
-        className="w-full bg-gray-800 rounded p-3 text-white"
-        placeholder="Account name (e.g. nickalot03)"
-        value={account}
-        onChange={(e) => setAccount(e.target.value)}
-      />
-      <input
-        className="w-full bg-gray-800 rounded p-3 text-white"
-        placeholder="Your name (for sign-off)"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button
-        className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
-        onClick={connectGmail}
-        disabled={loading}
+      <h1></h1>
+      <button onClick={GoHome}
       >
-        {loading ? "Connecting..." : "Connect To Gmail"}
+        <Image className="invert" src="/house-solid-full.svg" alt="Home" width={35} height={35 }  />
       </button>
-    </div>
-  )}
+      <h1 className="text-3xl font-bold mb-8 text-center" >Email Agent
+      </h1>
+      {step === 1 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Connect your account</h2>
+          <input
+            className="w-full bg-gray-800 rounded p-3 text-white"
+            placeholder="Account name (e.g. nickalot03)"
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+          />
+          <input
+            className="w-full bg-gray-800 rounded p-3 text-white"
+            placeholder="Your name (for sign-off)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <button
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
+            onClick={connectGmail}
+            disabled={loading}
+          >
+            {loading ? "Connecting..." : "Connect To Gmail"}
+          </button>
+        </div>
+      )}
 
       {step === 2 && (
-  <div className="space-y-4">
-    <p className="text-green-400">✓ Fetched {emails.length} emails</p>
-    <h2 className="text-xl font-semibold">What email are you looking for?</h2>
-    <input
-      className="w-full bg-gray-800 rounded p-3 text-white"
-      placeholder="e.g. email from Ben about National Grid"
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-    />
-    <button
-      className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
-      onClick={searchEmails}
-      disabled={loading}
-    >
-      {loading ? "Searching..." : "Search"}
-    </button>
-  </div>
-  )}
+        <div className="space-y-4">
+          <p className="text-green-400">✓ Fetched {emails.length} emails</p>
+          <h2 className="text-xl font-semibold">What email are you looking for?</h2>
+          <input
+            className="w-full bg-gray-800 rounded p-3 text-white"
+            placeholder="e.g. email from Ben about National Grid"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
+            onClick={searchEmails}
+            disabled={loading}
+          >
+            {loading ? "Searching..." : "Search"}
+          </button>
+        </div>
+      )}
+
       {step === 3 && (
         <div className="space-y-4">
           <p className="text-green-400">✓ Found {matches.length} matches</p>
@@ -166,71 +217,71 @@ async function approveEmail() {
         </div>
       )}
 
-        {step === 4 && (
-    <div className="space-y-4">
-      <p className="text-green-400">✓ Selected: {selectedEmail?.subject}</p>
-      <h2 className="text-xl font-semibold">Draft Reply</h2>
-      {!draft && (
-        <button
-          className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
-          onClick={() => getDraft()}
-          disabled={loading}
-        >
-          {loading ? "Drafting..." : "Generate Draft"}
-        </button>
-      )}
-      {draft && (
+      {step === 4 && (
         <div className="space-y-4">
-          <pre className="bg-gray-800 rounded p-4 whitespace-pre-wrap text-sm">
-            {draft}
-          </pre>
+          <p className="text-green-400">✓ Selected: {selectedEmail?.subject}</p>
+          <h2 className="text-xl font-semibold">Draft Reply</h2>
+          {!draft && (
+            <button
+              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold w-full"
+              onClick={() => getDraft()}
+              disabled={loading}
+            >
+              {loading ? "Drafting..." : "Generate Draft"}
+            </button>
+          )}
+          {draft && (
+            <div className="space-y-4">
+              <pre className="bg-gray-800 rounded p-4 whitespace-pre-wrap text-sm">
+                {draft}
+              </pre>
+              <button
+                className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded font-semibold w-full"
+                onClick={approveEmail}
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Approve & Send"}
+              </button>
+              <input
+                className="w-full bg-gray-800 rounded p-3 text-white"
+                placeholder="Not happy? Give feedback and redraft..."
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+              />
+              <button
+                className="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded font-semibold w-full"
+                onClick={() => {
+                  getDraft(feedback);
+                  setFeedback("");
+                }}
+                disabled={loading || !feedback}
+              >
+                Redraft with Feedback
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {step === 5 && (
+        <div className="space-y-4 text-center">
+          <p className="text-4xl">✓</p>
+          <h2 className="text-xl font-semibold text-green-400">Email Sent!</h2>
           <button
-            className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded font-semibold w-full"
-            onClick={approveEmail}
-            disabled={loading}
-          >
-            {loading ? "Sending..." : "Approve & Send"}
-          </button>
-          <input
-            className="w-full bg-gray-800 rounded p-3 text-white"
-            placeholder="Not happy? Give feedback and redraft..."
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-          />
-          <button
-            className="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded font-semibold w-full"
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold"
             onClick={() => {
-              getDraft(feedback);
+              setDraft("");
               setFeedback("");
+              setSelectedEmail(null);
+              setMatches([]);
+              setQuery("");
+              fetchEmails(localStorage.getItem("account"));
             }}
-            disabled={loading || !feedback}
           >
-            Redraft with Feedback
+            Start Over
           </button>
         </div>
       )}
-    </div>
-  )}
-
-  {step === 5 && (
-    <div className="space-y-4 text-center">
-      <p className="text-4xl">✓</p>
-      <h2 className="text-xl font-semibold text-green-400">Email Sent!</h2>
-          <button
-      className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-semibold"
-      onClick={() => {
-        setDraft("");
-        setFeedback("");
-        setSelectedEmail(null);
-        setMatches([]);
-        setQuery("");
-        fetchEmails(localStorage.getItem("account"));
-      }}
-    >
-      Start Over
-    </button>
-    </div>
-  )}
     </main>
   );
 }
